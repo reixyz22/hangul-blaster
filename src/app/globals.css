@@ -1,26 +1,53 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: #020617;
+  --color-foreground: #e2e8f0;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  /* System Korean faces stand in while Noto Sans KR streams, and cover
+     devices that never fetch it. */
+  --font-ko:
+    var(--font-noto-kr), "Apple SD Gothic Neo", "Malgun Gothic", "Nanum Gothic",
+    sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  overscroll-behavior-y: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/*
+ * The reference chart renders before we know whether this device has a Korean
+ * voice, so both messages ship in the HTML and <ChartAudio /> picks one by
+ * setting data-ko-audio on <html>.
+ */
+.ko-audio-on,
+.ko-audio-off {
+  display: none;
+}
+
+html[data-ko-audio="on"] .ko-audio-on {
+  display: inline-block;
+}
+
+html[data-ko-audio="off"] .ko-audio-off {
+  display: inline;
 }
