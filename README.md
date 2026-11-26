@@ -1,54 +1,90 @@
 # Hangul Blaster
 
-An arcade game for learning the Korean alphabet. A character falls down the
-screen; pick its match from four buttons before it lands. Speed climbs as you
-score, you get three lives, and the characters you miss come back more often.
+A typing shooter for the Korean alphabet. Meteors fall, you type what's on
+them, your ship fires. Type 각 and that's three keystrokes — `r k r` — and the
+meteor cracks apart one letter at a time.
 
-No backend, no accounts. Everything runs in the browser and progress lives in
-`localStorage`.
+No backend, no accounts, no menu. Progress lives in `localStorage`.
+
+## There is no romanization in this game
+
+Not on the meteors, not on the buttons, not on the reference page. A letter is
+learned here as a **shape**, a **sound** and a **key** — three things the game
+can actually test. "ㄱ = g/k" trains a Latin lookup table instead of reading.
+
+That isn't settled science, and it would be dishonest to pretend otherwise: no
+controlled study compares romanization-supported and Hangul-only learners of
+Korean. What exists is adjacent and suggestive —
+
+- L1 orthographic interference is robust in L2 word learning, and worst where
+  grapheme-phoneme correspondences are incongruent between the two systems,
+  which is exactly ㄱ → "g/k".
+- [Pae, Lee & Yi (2025)](https://link.springer.com/article/10.1186/s40862-025-00348-7)
+  taught 34 English-speaking adults Hangul two ways. The grapheme-emphasis
+  group won the *grapheme-matching* test and nothing else. **You get good at
+  what you train.**
+
+The only Latin letters anywhere are keycaps, which are positions on a keyboard
+rather than pronunciations.
+
+## Syllables early, on purpose
+
+That same 2025 study found the **syllable**-emphasis group read both trained
+and novel words more accurately, on both test days. An earlier study by the
+same group comparing large-, medium- and small-grain instruction put the
+syllable group on top too.
+
+So bare letters are an on-ramp, not the game. ㅏ and ㄱ arrive in the first two
+waves and 가 falls in the third. After that most meteors are syllable blocks.
+
+The typing mechanic is what makes this free: a block on screen is one syllable,
+and under your fingers it is its letters in order. Both grain sizes, one
+action.
 
 ## Playing
 
-- **Letter → sound** — see ㄱ, pick "g / k"
-- **Sound → letter** — see "g / k", pick ㄱ
-- **Listen** — hear the sound, pick the letter (hidden on devices with no
-  Korean voice installed)
+Press 시작 and you're in. There is no difficulty setting because the weighting
+*is* the difficulty — letters you own fall fast and score more, letters you
+fumble fall slow and come back sooner.
 
-Tap an answer, or press <kbd>1</kbd>–<kbd>4</kbd>.
+- **Desktop** — just type. The game reads physical keys itself, so no Korean
+  IME and no setup: `r` is ㄱ whatever your keycaps say. If you *do* have an
+  IME running, composed jamo are accepted too.
+- **Phone** — the on-screen keyboard is the real dubeolsik layout, so the thumb
+  that learns where ㄱ lives is teaching the finger that will reach for `r`.
 
-Six levels, all playable from the start: basic consonants, basic vowels,
-y-vowels, aspirated and tense consonants, compound vowels, and syllable blocks
-(가 나 도 무 …, then blocks with a final consonant: 각 반 돌 …). Answer ten
-correctly in a run to earn the next level.
+Layout is dubeolsik (두벌식), [KS X 5002](https://en.wikipedia.org/wiki/Korean_language_and_computers),
+the South Korean standard since 1985 and the default on Windows, macOS,
+Android and iOS. Consonants left hand, vowels right.
 
-## How it teaches
+## What makes it a game and not flash cards
 
-- **Weighted repetition.** Every character carries a running accuracy in
-  `localStorage`. A character you keep missing is up to five times likelier to
-  appear than one you know, and never-seen characters sit in between, so a run
-  introduces new material while dragging old mistakes back in front of you.
-- **Confusable distractors.** Wrong answers are the letters learners actually
-  mix up — ㅂ/ㅍ, ㅓ/ㅗ, ㄷ/ㅌ — from hand-written sets in
-  [`src/lib/hangul.ts`](src/lib/hangul.ts). Syllable blocks generate their own:
-  every distractor differs from the answer by exactly one jamo.
-- **Mistake review.** The end screen lists what you missed with its sound and a
-  play button.
-- **Reference chart.** `/chart` has the full table plus a consonant × vowel
-  syllable grid, audio on tap.
+- **Multi-keystroke targets.** Progress is visible mid-target — the letters
+  under a block light up as they land.
+- **Lock-on.** The first letter you type commits you to that meteor. A wrong
+  letter breaks the lock and the meteor knits itself back together, so a miss
+  costs progress rather than a life.
+- **Several at once.** Which one you engage is a real decision.
+- **Waves.** Each one introduces a letter on a card with its 가나다 mnemonic
+  word, then mixes it into everything already learned.
+- **Silent meteors.** From wave 5, some arrive showing nothing at all — the
+  sound is the only clue. Worth double.
+- **A daily streak** on the local calendar day, which survives a missed hour
+  but not a missed day.
 
-### A note on the audio
+## The mnemonic words
 
-Speech synthesis reads a bare jamo as its *letter name* — ㄱ comes out as
-"기역" — which is not the sound being taught. So each letter stores a syllable
-to speak instead: consonants as their ㅏ-syllable (가, 나, 다 …) and vowels as
-their ㅇ-syllable (아, 어, 오 …). Syllable blocks speak themselves.
+Every letter carries a word in the style of a 가나다 children's book — ㄱ is
+기차, ㄴ is 나비, ㅅ is 사과.
 
-### A note on the romanization
+The vowels work differently and the difference is the lesson: **no Korean word
+begins with a bare vowel.** A word that sounds like it starts with ㅏ is spelled
+with a silent ㅇ in front — 아기, 오이, 우산. The one rule beginners trip over
+is taught by the cards before anyone has to state it.
 
-Revised Romanization throughout. Letters whose sound depends on position carry
-a single combined label — ㄱ is "g / k", not a guess between the two. Final
-consonants in level 6 are limited to ㄱ ㄴ ㄹ ㅁ ㅂ ㅇ, the six that romanize
-unambiguously, so no two cards ever share an answer.
+`gloss` in [`src/lib/mnemonics.ts`](src/lib/mnemonics.ts) is a placeholder for
+the picture that will replace it. It is the only English in the app, it appears
+only on the card that introduces a letter, and it goes away once there is art.
 
 ## Running it
 
@@ -66,52 +102,31 @@ npm start
 
 ## Deploying
 
-Vercel, with the stock Next.js settings — there is nothing to configure.
+Vercel, stock Next.js settings, nothing to configure. Import the repository,
+leave every default alone, deploy.
 
-1. Push this repository to GitHub.
-2. In Vercel, **Add New → Project**, import the repository.
-3. Leave the framework preset on **Next.js** and the build command, output
-   directory and install command on their defaults. No environment variables.
-4. **Deploy.**
+## Notes on the build
 
-Later pushes to the default branch redeploy on their own.
-
-## Built with
-
-Next.js (App Router) · TypeScript · Tailwind CSS v4 · Web Speech API ·
-Noto Sans KR via `next/font/local`
-
-## Performance
-
-Lighthouse on `npm run build && npm start`:
-
-| Page     | Mobile                  | Desktop                  |
-| -------- | ----------------------- | ------------------------ |
-| `/`      | 93 perf · 100 a11y/BP/SEO | 100 perf · 100 a11y/BP/SEO |
-| `/chart` | 94 perf · 100 a11y/BP/SEO | 100 perf · 100 a11y/BP/SEO |
-
-Two things got it there:
-
-- **The font is subsetted.** Noto Sans KR ships as ~450 KB of split woff2
-  chunks behind a render-blocking stylesheet, and this game paints at most a
-  few hundred glyphs. [`scripts/subset-font.py`](scripts/subset-font.py) cuts
-  it to exactly the characters the source and the level pools can produce —
-  264 glyphs, one 27 KB file. Re-run it after changing any Korean string or
-  level pool.
-- **The chart doesn't hydrate.** It is a server component of static HTML with
-  the syllable to speak in a `data-speak` attribute; one client island
-  delegates a single click listener for all 94 buttons. Hydrating them as React
-  components cost 2.3 s of blocked main thread on a mid-range phone.
-
-## Accessibility and motion
-
-Portrait mobile is the first-class layout; touch targets are at least 48px.
-Answers are announced through a live region, and `prefers-reduced-motion`
-turns the glide into eight discrete hops with a longer fall.
+- **No Korean webfont.** The game composes syllables at runtime, so its glyph
+  set is most of the 11,172 modern blocks — far past what a subset can carry,
+  and the full Noto Sans KR is ~450 KB of split chunks behind a render-blocking
+  stylesheet. Every platform this runs on ships a Korean face, so `--font-ko`
+  asks for those: nothing to download, nothing missing.
+- **The reference page doesn't hydrate.** `/chart` is a server component of
+  static HTML with the syllable to speak in a `data-speak` attribute; one
+  client island delegates a single click listener for all 94 buttons.
+  Hydrating them as React components cost 2.3 s of blocked main thread on a
+  mid-range phone.
+- **Motion is written straight to the DOM.** Meteor positions, ship rotation
+  and the beam are set on nodes inside one `requestAnimationFrame`, so a 60fps
+  field never costs a React render. React state changes only on spawn, strike
+  and destroy.
+- `prefers-reduced-motion` turns the fall into ten discrete hops and gives
+  every target 30% longer.
 
 ## Ideas for v2
 
-Out of scope here, noted for later: accounts and cross-device sync,
-leaderboards, multiplayer races, server-side progress, recorded native-speaker
-audio in place of speech synthesis, whole-word and sentence levels, and the
-irregular batchim/liaison rules that single syllables let us dodge.
+Picture meteors for the mnemonic words, replacing the English glosses.
+Accounts and cross-device sync, leaderboards, multiplayer races, recorded
+native-speaker audio in place of speech synthesis, whole-word and sentence
+waves, and the batchim liaison rules that single syllables let us dodge.

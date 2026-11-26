@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import localFont from "next/font/local";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,20 +12,17 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Noto Sans KR, cut down to the 264 glyphs this game can paint — see
-// scripts/subset-font.py. The full family ships as ~450 KB of split woff2
-// chunks behind a render-blocking stylesheet; this is one 27 KB file.
-const notoKR = localFont({
-  src: "../fonts/noto-sans-kr-subset.woff2",
-  variable: "--font-noto-kr",
-  weight: "400 700",
-  display: "swap",
-});
+// There is no Korean webfont here. The game composes syllables on the fly, so
+// its glyph set is most of the 11,172 modern blocks — far past what a subset
+// can carry, and the full Noto Sans KR is ~450 KB of split chunks behind a
+// render-blocking stylesheet. Every platform this runs on ships a Korean face
+// already, so --font-ko (see globals.css) asks for those instead: nothing to
+// download, and nothing missing.
 
 export const metadata: Metadata = {
   title: "Hangul Blaster",
   description:
-    "An arcade game for learning the Korean alphabet. Shoot down Hangul letters before they land.",
+    "A typing shooter for the Korean alphabet. Meteors fall, you type them, your ship fires.",
 };
 
 export const viewport: Viewport = {
@@ -38,7 +34,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${notoKR.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">{children}</body>
     </html>

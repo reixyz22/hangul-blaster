@@ -1,22 +1,21 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useState, useSyncExternalStore } from "react";
-import { Game } from "@/components/Game";
-import { Menu } from "@/components/Menu";
-import { Results } from "@/components/Results";
-import type { Mode } from "@/lib/quiz";
-import type { RunSummary } from "@/lib/run";
+import { Blaster } from "@/components/Blaster";
+import { RunStats } from "@/components/RunStats";
 import { useKoreanSpeech } from "@/lib/speech";
 import {
   applyRun,
   commitProgress,
+  currentStreak,
   progressSnapshot,
-  resetProgress,
   serverProgressSnapshot,
   subscribeProgress,
+  type RunSummary,
 } from "@/lib/storage";
 
-type Screen = "menu" | "playing" | "results";
+type Screen = "ready" | "playing" | "stats";
 
 export default function Home() {
   const progress = useSyncExternalStore(
@@ -25,85 +24,97 @@ export default function Home() {
     serverProgressSnapshot,
   );
 
-  const [screen, setScreen] = useState<Screen>("menu");
-  // Null until the player picks: fall back to the furthest level they've earned.
-  const [chosenLevel, setChosenLevel] = useState<number | null>(null);
-  const [mode, setMode] = useState<Mode>("letter-to-sound");
+  const [screen, setScreen] = useState<Screen>("ready");
   const [run, setRun] = useState<RunSummary | null>(null);
   const [isHighScore, setIsHighScore] = useState(false);
-  // Bumped on every new run so <Game> remounts with a clean slate.
   const [runId, setRunId] = useState(0);
 
-  const { speak, supported: listenSupported } = useKoreanSpeech();
-
-  const level = chosenLevel ?? progress.unlockedLevel;
-  // Never strand the player in a mode this device cannot play.
-  const effectiveMode =
-    listenSupported === false && mode === "listen" ? "letter-to-sound" : mode;
+  const { speak, supported } = useKoreanSpeech();
 
   const start = useCallback(() => {
+    // Browsers only let speech synthesis start from a gesture, so the first
+    // press of the run is also what buys us the voice for the whole run.
+    speak(" ");
     setRunId((id) => id + 1);
     setScreen("playing");
-  }, []);
+  }, [speak]);
 
   const finish = useCallback(
     (summary: RunSummary) => {
       setIsHighScore(summary.score > progress.highScore);
       commitProgress(applyRun(progress, summary));
       setRun(summary);
-      setScreen("results");
+      setScreen("stats");
     },
     [progress],
   );
 
-  const reset = useCallback(() => {
-    resetProgress();
-    setChosenLevel(1);
-  }, []);
-
   if (screen === "playing") {
     return (
       <main className="flex-1">
-        <Game
+        <Blaster
           key={runId}
-          level={level}
-          mode={effectiveMode}
           baseStats={progress.stats}
           speak={speak}
           onFinish={finish}
-          onExit={() => setScreen("menu")}
+          onQuit={() => setScreen("ready")}
         />
       </main>
     );
   }
 
-  if (screen === "results" && run) {
+  if (screen === "stats" && run) {
     return (
       <main className="flex-1">
-        <Results
+        <RunStats
           run={run}
+          progress={progress}
           isHighScore={isHighScore}
-          canSpeak={listenSupported === true}
+          canSpeak={supported === true}
           speak={speak}
-          onPlayAgain={start}
-          onMenu={() => setScreen("menu")}
+          onAgain={start}
         />
       </main>
     );
   }
 
   return (
-    <main className="flex-1">
-      <Menu
-        progress={progress}
-        level={level}
-        mode={effectiveMode}
-        listenSupported={listenSupported}
-        onLevelChange={setChosenLevel}
-        onModeChange={setMode}
-        onStart={start}
-        onReset={reset}
-      />
+    <main className="flex flex-1 flex-col">
+      <button
+        type="button"
+        onClick={start}
+        className="flex flex-1 flex-col items-center justify-center gap-6 px-6 text-center focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-cyan-400"
+      >
+        <span className="font-ko text-6xl font-bold text-cyan-300">한글</span>
+        <span className="font-ko animate-pulse text-2xl text-slate-100">
+          시작
+        </span>
+        <span className="flex gap-6 text-center">
+          <span>
+            <span className="block font-mono text-2xl font-bold tabular-nums text-fuchsia-400">
+              {currentStreak(progress.streak)}
+            </span>
+            <span className="text-xs tracking-widest text-slate-400 uppercase">
+              day streak
+            </span>
+          </span>
+          <span>
+            <span className="block font-mono text-2xl font-bold tabular-nums text-cyan-300">
+              {progress.highScore}
+            </span>
+            <span className="text-xs tracking-widest text-slate-400 uppercase">
+              best
+            </span>
+          </span>
+        </span>
+      </button>
+
+      <Link
+        href="/chart"
+        className="mx-auto mb-4 flex min-h-12 items-center rounded-xl px-4 text-sm text-slate-400 hover:text-cyan-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400"
+      >
+        <span className="font-ko">자판</span>
+      </Link>
     </main>
   );
 }
